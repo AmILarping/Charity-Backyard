@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.DEINE-DOMAIN.de/sitemap.xml
+Sitemap: https://charity-backyard.de/sitemap.xml
