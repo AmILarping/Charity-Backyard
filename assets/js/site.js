@@ -5,6 +5,10 @@ const CONFIG = {
   // Solange sie leer ist, läuft die Anmeldung im Vorschau-Modus.
   API_URL: '',
 
+  // true  = nur Anmeldung: Namen und E-Mail werden in die Tabelle geschrieben, keine Zahlung.
+  // false = Anmeldung mit PayPal-Zahlung (braucht apps-script/Code.gs statt Code-einfach.gs).
+  NUR_ANMELDUNG: true,
+
   // Start: 22.05.2027, 8:00 Uhr deutscher Zeit (Sommerzeit, UTC+2)
   START: Date.UTC(2027, 4, 22, 6, 0, 0)
 };
@@ -212,9 +216,11 @@ const euro = (n) => new Intl.NumberFormat('de-DE', { style: 'currency', currency
     statusBox.dataset.state = s.zustand;
     statusFee.hidden = true;
 
-    if (s.zustand === 'offen' || s.zustand === 'vorschau') {
+    if (s.zustand === 'offen' || s.zustand === 'vorschau' || s.zustand === 'einfach') {
       if (s.zustand === 'vorschau') {
         statusText.textContent = 'Vorschau: Anmeldung noch nicht verbunden';
+      } else if (s.zustand === 'einfach') {
+        statusText.textContent = 'Die Anmeldung ist geöffnet';
       } else {
         statusText.textContent = s.frei === 1 ? 'Noch 1 von ' + s.plaetze + ' Plätzen frei' : 'Noch ' + s.frei + ' von ' + s.plaetze + ' Plätzen frei';
         statusFee.textContent = 'Startgebühr ' + euro(s.gebuehr);
@@ -242,6 +248,7 @@ const euro = (n) => new Intl.NumberFormat('de-DE', { style: 'currency', currency
 
   async function ladeStatus() {
     if (!CONFIG.API_URL) { zeigeStatus({ zustand: 'vorschau' }); return; }
+    if (CONFIG.NUR_ANMELDUNG) { zeigeStatus({ zustand: 'einfach' }); return; }
     try {
       const res = await fetch(CONFIG.API_URL + '?action=status', { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -374,7 +381,7 @@ const euro = (n) => new Intl.NumberFormat('de-DE', { style: 'currency', currency
         paypalLaden.hidden = true;
         if (r && r.ok) {
           schliesseButtons();
-          $('#e-platz').textContent = 'Nr. ' + r.platz;
+          if ($('#e-platz')) $('#e-platz').textContent = 'Nr. ' + r.platz;
           $('#e-email').textContent = daten.email;
           zeige('erfolg');
           $('#erfolg-titel').focus();
@@ -401,6 +408,32 @@ const euro = (n) => new Intl.NumberFormat('de-DE', { style: 'currency', currency
     paypalLaden.hidden = true;
   }
 
+  /* --- Nur Anmeldung (ohne Zahlung) --- */
+  async function anmelden() {
+    const knopf = $('#weiter');
+    if (!CONFIG.API_URL) {
+      meldung(formFehler, 'Vorschau: Die Anmeldung ist noch nicht mit der Tabelle verbunden. Es wurde nichts gespeichert.');
+      return;
+    }
+    knopf.disabled = true;
+    meldung(formFehler, '');
+    try {
+      const r = await api(Object.assign({ action: 'anmelden' }, daten));
+      if (r && r.ok) {
+        $('#e-email').textContent = daten.email;
+        zeige('erfolg');
+        $('#erfolg-titel').focus();
+        form.reset();
+        return;
+      }
+      meldung(formFehler, (r && r.message) || 'Die Anmeldung konnte nicht gespeichert werden. Bitte versuche es erneut.');
+    } catch (err) {
+      meldung(formFehler, 'Die Anmeldung ist gerade nicht erreichbar. Bitte prüfe deine Internetverbindung und versuche es erneut.');
+    } finally {
+      knopf.disabled = false;
+    }
+  }
+
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     if (!pruefe()) return;
@@ -412,6 +445,7 @@ const euro = (n) => new Intl.NumberFormat('de-DE', { style: 'currency', currency
       bedingungen: true,
       datenschutz: true
     };
+    if (CONFIG.NUR_ANMELDUNG) { anmelden(); return; }
     $('#z-name').textContent = daten.vorname + ' ' + daten.nachname;
     $('#z-email').textContent = daten.email;
     const vorschau = !stand || stand.zustand === 'vorschau';
