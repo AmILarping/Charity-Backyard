@@ -315,7 +315,7 @@
       <div class="signup__info">
         <p class="kicker">Anmeldung</p>
         <h2 class="h2">Anmeldung zum Charity Backyard Bad Vilbel</h2>
-        <p class="lead">Es gibt 100 Startplätze. Vergeben werden sie in der Reihenfolge der Anmeldungen. Dein Platz ist gesichert, sobald die Startgebühr per PayPal bezahlt ist.</p>
+        <p class="lead">Es gibt 100 Startplätze. Vergeben werden sie in der Reihenfolge der Anmeldungen. Informationen zur Startgebühr und zur Zahlung folgen später.</p>
 
         <div class="status" id="status" data-state="laden" role="status" aria-live="polite">
           <span class="status__dot" aria-hidden="true"></span>
@@ -325,8 +325,8 @@
 
         <ol class="signup__steps">
           <li><p><strong>Daten eintragen</strong>Vorname, Nachname und E-Mail-Adresse genügen.</p></li>
-          <li><p><strong>Mit PayPal bezahlen</strong>Die Startgebühr wird direkt bei der Anmeldung fällig.</p></li>
-          <li><p><strong>Bestätigung per E-Mail</strong>Du bekommst sofort deine Platznummer zugeschickt.</p></li>
+          <li><p><strong>Anmeldung abschicken</strong>Mit einem Klick ist deine Anmeldung eingegangen.</p></li>
+          <li><p><strong>Zahlung folgt später</strong>Die Startgebühr wird nicht bei der Anmeldung fällig.</p></li>
         </ol>
       </div>
 
@@ -365,10 +365,9 @@
               <span>Ich habe die <a href="datenschutz.html" target="_blank" rel="noopener">Datenschutzerklärung</a> gelesen.</span>
             </label>
             <div class="alert" id="formular-fehler" role="alert" hidden></div>
-            <button class="btn btn--primary" type="submit" id="weiter">Weiter zur Zahlung
+            <button class="btn btn--primary" type="submit" id="weiter">Jetzt anmelden
               <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg>
             </button>
-            <p class="form__hint">Mit Klick auf „Weiter zur Zahlung“ wird PayPal geladen. Dabei werden Daten an PayPal übertragen.</p>
           </form>
         </div>
 
@@ -390,9 +389,8 @@
 
         <!-- Ansicht 3: Erfolg -->
         <div id="ansicht-erfolg" class="success" hidden>
-          <h3 tabindex="-1" id="erfolg-titel">Du bist dabei!</h3>
-          <p class="success__badge"><small>Startplatz</small><span id="e-platz"></span></p>
-          <p>Deine Zahlung ist eingegangen und dein Startplatz ist gesichert. Die Bestätigung haben wir an <strong id="e-email"></strong> geschickt. Schau bitte auch im Spam-Ordner nach.</p>
+          <h3 tabindex="-1" id="erfolg-titel">Danke für deine Anmeldung!</h3>
+          <p>Deine Anmeldung ist eingegangen. Wir haben sie mit der Adresse <strong id="e-email"></strong> erfasst. Informationen zur Startgebühr und zur Zahlung folgen später.</p>
           <p class="hand">Wir sehen uns am 22. Mai an der Startlinie!</p>
         </div>
 
