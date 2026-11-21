@@ -9,6 +9,10 @@ const CONFIG = {
   // false = Anmeldung mit PayPal-Zahlung (braucht apps-script/Code.gs statt Code-einfach.gs).
   NUR_ANMELDUNG: true,
 
+  // Ab hier ist die Anmeldung offen: 1. Februar 2027, 0:00 Uhr deutscher Zeit (UTC+1).
+  // Davor zeigt die Seite die Erinnerung per E-Mail statt des Anmeldeformulars.
+  ANMELDESTART: Date.UTC(2027, 0, 31, 23, 0, 0),
+
   // Start: 22.05.2027, 8:00 Uhr deutscher Zeit (Sommerzeit, UTC+2)
   START: Date.UTC(2027, 4, 22, 6, 0, 0)
 };
@@ -175,7 +179,8 @@ const euro = (n) => new Intl.NumberFormat('de-DE', { style: 'currency', currency
 
   const ansichten = {
     formular: $('#ansicht-formular'), zahlung: $('#ansicht-zahlung'),
-    erfolg: $('#ansicht-erfolg'), zu: $('#ansicht-zu')
+    erfolg: $('#ansicht-erfolg'), zu: $('#ansicht-zu'),
+    erinnerung: $('#ansicht-erinnerung'), erinnerungOk: $('#ansicht-erinnerung-ok')
   };
   const statusBox = $('#status');
   const statusText = $('#status-text');
@@ -216,6 +221,13 @@ const euro = (n) => new Intl.NumberFormat('de-DE', { style: 'currency', currency
     statusBox.dataset.state = s.zustand;
     statusFee.hidden = true;
 
+    if (s.zustand === 'erinnerung') {
+      statusText.textContent = 'Die Anmeldung startet am 1. Februar 2027';
+      if (!ansichten.erinnerungOk.hidden) return;
+      zeige('erinnerung');
+      return;
+    }
+
     if (s.zustand === 'offen' || s.zustand === 'vorschau' || s.zustand === 'einfach') {
       if (s.zustand === 'vorschau') {
         statusText.textContent = 'Vorschau: Anmeldung noch nicht verbunden';
@@ -248,7 +260,10 @@ const euro = (n) => new Intl.NumberFormat('de-DE', { style: 'currency', currency
 
   async function ladeStatus() {
     if (!CONFIG.API_URL) { zeigeStatus({ zustand: 'vorschau' }); return; }
-    if (CONFIG.NUR_ANMELDUNG) { zeigeStatus({ zustand: 'einfach' }); return; }
+    if (CONFIG.NUR_ANMELDUNG) {
+      zeigeStatus({ zustand: Date.now() < CONFIG.ANMELDESTART ? 'erinnerung' : 'einfach' });
+      return;
+    }
     try {
       const res = await fetch(CONFIG.API_URL + '?action=status', { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -458,6 +473,47 @@ const euro = (n) => new Intl.NumberFormat('de-DE', { style: 'currency', currency
     if (!vorschau) zeigeButtons();
   });
 
+  /* --- Erinnerung vor dem Anmeldestart --- */
+  const erinnerungsForm = $('#erinnerungsformular');
+  if (erinnerungsForm) {
+    erinnerungsForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fehler = $('#erinnerung-fehler');
+      const knopf = $('#erinnerung-senden');
+      const feld = erinnerungsForm.elements.email;
+      const email = feld.value.trim().toLowerCase();
+      const mailFehler = regeln.email(email);
+      feldFehler(feld, mailFehler);
+      if (mailFehler) { feld.focus(); return; }
+      if (!erinnerungsForm.elements.einwilligung.checked) {
+        meldung(fehler, 'Bitte stimme der einmaligen Erinnerung per E-Mail zu.');
+        return;
+      }
+      meldung(fehler, '');
+      knopf.disabled = true;
+      try {
+        const r = await api({
+          action: 'erinnern',
+          email,
+          einwilligung: true,
+          website: erinnerungsForm.elements.website.value
+        });
+        if (r && r.ok) {
+          $('#erinnerung-ok-email').textContent = email;
+          zeige('erinnerungOk');
+          $('#erinnerung-ok-titel').focus();
+          erinnerungsForm.reset();
+          return;
+        }
+        meldung(fehler, (r && r.message) || 'Die Erinnerung konnte nicht gespeichert werden. Bitte versuche es erneut.');
+      } catch (err) {
+        meldung(fehler, 'Die Erinnerung ist gerade nicht erreichbar. Bitte prüfe deine Internetverbindung und versuche es erneut.');
+      } finally {
+        knopf.disabled = false;
+      }
+    });
+  }
+
   $('#zurueck').addEventListener('click', () => {
     schliesseButtons();
     zeige('formular');
@@ -465,4 +521,35 @@ const euro = (n) => new Intl.NumberFormat('de-DE', { style: 'currency', currency
   });
 
   ladeStatus();
+})();
+
+
+/* ---------- Hinweis-Banner zum Anmeldestart ---------- */
+(function banner() {
+  const vorStart = CONFIG.API_URL && CONFIG.NUR_ANMELDUNG && Date.now() < CONFIG.ANMELDESTART;
+  if (!vorStart) return;
+
+  // Buttons zur Anmeldung heißen bis zum Start „Erinnerung sichern“
+  document.querySelectorAll('a.btn[href="#anmeldung"]').forEach((a) => {
+    if (a.closest('#start-banner')) return;
+    const knoten = Array.from(a.childNodes).find((n) => n.nodeType === 3 && n.nodeValue.trim());
+    if (knoten) knoten.nodeValue = 'Erinnerung sichern ';
+  });
+
+  const box = $('#start-banner');
+  if (!box) return;
+  let geschlossen = false;
+  let imAnmeldebereich = false;
+  const anzeigen = () => { box.hidden = geschlossen || imAnmeldebereich; };
+
+  $('.banner__close', box).addEventListener('click', () => { geschlossen = true; anzeigen(); });
+
+  const ziel = $('#anmeldung');
+  if (ziel && 'IntersectionObserver' in window) {
+    new IntersectionObserver((eintraege) => {
+      imAnmeldebereich = eintraege.some((e) => e.isIntersecting);
+      anzeigen();
+    }, { threshold: 0.15 }).observe(ziel);
+  }
+  anzeigen();
 })();

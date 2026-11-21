@@ -333,6 +333,38 @@
       <div class="panel" id="anmelde-panel">
         <noscript><p class="alert">Für die Anmeldung wird JavaScript benötigt. Bitte aktiviere es in deinem Browser.</p></noscript>
 
+        <!-- Ansicht 0: Anmeldung noch nicht offen, Erinnerung -->
+        <div id="ansicht-erinnerung" hidden>
+          <h3>Die Anmeldung startet am 1. Februar 2027</h3>
+          <p>Trag deine E-Mail-Adresse ein. Wir erinnern dich einmalig, sobald die Anmeldung öffnet.</p>
+          <form class="form" id="erinnerungsformular" novalidate>
+            <div class="field">
+              <label for="erinnerung-email">E-Mail-Adresse</label>
+              <input id="erinnerung-email" name="email" type="email" autocomplete="email" inputmode="email" maxlength="120" required>
+            </div>
+            <div class="hp" aria-hidden="true">
+              <label for="erinnerung-website">Website (bitte leer lassen)</label>
+              <input id="erinnerung-website" name="website" type="text" tabindex="-1" autocomplete="off">
+            </div>
+            <label class="check">
+              <input type="checkbox" id="erinnerung-einwilligung" name="einwilligung" required>
+              <span>Ich möchte einmalig per E-Mail an den Anmeldestart erinnert werden. Meine Adresse wird dafür gespeichert und danach gelöscht. Die <a href="datenschutz.html" target="_blank" rel="noopener">Datenschutzerklärung</a> habe ich gelesen.</span>
+            </label>
+            <div class="alert" id="erinnerung-fehler" role="alert" hidden></div>
+            <button class="btn btn--primary" type="submit" id="erinnerung-senden">Erinnere mich
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h12M11 5l5 5-5 5"/></svg>
+            </button>
+            <p class="form__hint">Du bekommst gleich eine Mail, in der du deine Adresse bestätigst.</p>
+          </form>
+        </div>
+
+        <!-- Ansicht 0b: Erinnerung bestellt -->
+        <div id="ansicht-erinnerung-ok" class="success" hidden>
+          <h3 tabindex="-1" id="erinnerung-ok-titel">Fast geschafft!</h3>
+          <p>Wir haben dir eine Mail an <strong id="erinnerung-ok-email"></strong> geschickt. Bitte klicke darin auf den Bestätigungslink, sonst können wir dich nicht erinnern. Schau auch im Spam-Ordner nach. Falls du deine Adresse schon bestätigt hast, musst du nichts weiter tun.</p>
+          <p class="hand">Am 1. Februar geht&#8217;s los!</p>
+        </div>
+
         <!-- Ansicht 1: Formular -->
         <div id="ansicht-formular">
           <h3>Deine Daten</h3>
@@ -585,6 +617,13 @@
     <p class="footer__legal">© <mark class="todo">[VERANSTALTER]</mark></p>
   </div>
 </footer>
+
+<aside class="banner" id="start-banner" role="region" aria-label="Hinweis zum Anmeldestart" hidden>
+  <button class="banner__close" type="button" aria-label="Hinweis schließen">&times;</button>
+  <p class="banner__title">Anmeldung startet am 1. Februar 2027</p>
+  <p class="banner__text">Lass dich per E-Mail erinnern, sobald es losgeht.</p>
+  <a class="btn btn--primary btn--small" href="#anmeldung">Erinnerung sichern</a>
+</aside>
 
 <script src="assets/js/site.js" defer></script>
 </body>
