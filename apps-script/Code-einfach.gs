@@ -5,14 +5,14 @@
  * und wird als Web-App bereitgestellt.
  *
  * Blatt „Anmeldungen“: Jede Anmeldung wird als neue Zeile gespeichert (erst ab ANMELDESTART).
- * Blatt „Erinnerung“:  E-Mail-Adressen für die einmalige Erinnerung (mit Double-Opt-In).
+ * Blatt „Mailregistrierung“ (links neben „Anmeldungen“):  E-Mail-Adressen für die einmalige Erinnerung (mit Double-Opt-In).
  *
  * Einmalig einrichten: Funktion „einrichten“ ausführen (legt Blätter und Zeitsteuerungen an).
  */
 
 const BLATT = 'Anmeldungen';
 const KOPF = ['Zeitstempel', 'Vorname', 'Nachname', 'E-Mail', 'Status'];
-const BLATT_ERINNERUNG = 'Erinnerung';
+const BLATT_ERINNERUNG = 'Mailregistrierung'; // Tab links neben 'Anmeldungen'
 const KOPF_ERINNERUNG = ['Zeitstempel', 'E-Mail', 'Status', 'Token'];
 const MAX_ZEILEN = 3000; // Schutz gegen massenhafte Einträge
 
@@ -261,8 +261,14 @@ function aufraeumen() {
 
 // Einmalig im Editor ausführen: legt die Blätter und Zeitsteuerungen an.
 function einrichten() {
-  blatt_(BLATT, KOPF);
-  blatt_(BLATT_ERINNERUNG, KOPF_ERINNERUNG);
+  const a = blatt_(BLATT, KOPF);
+  const m = blatt_(BLATT_ERINNERUNG, KOPF_ERINNERUNG);
+  // Mailregistrierung direkt links neben Anmeldungen platzieren
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (m.getIndex() !== a.getIndex() - 1 && m.getIndex() > a.getIndex()) {
+    ss.setActiveSheet(m);
+    ss.moveActiveSheet(a.getIndex());
+  }
   triggerLoeschen_('erinnerungenSenden');
   triggerLoeschen_('aufraeumen');
   if (ERINNERUNG_ZEIT > new Date()) {
@@ -290,7 +296,11 @@ function test() {
 function blatt_(name, kopf) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let blatt = ss.getSheetByName(name);
-  if (!blatt) blatt = ss.insertSheet(name);
+  if (!blatt) {
+    // Mailregistrierung wird links von 'Anmeldungen' angelegt, alles andere am Ende
+    const a = name === BLATT_ERINNERUNG ? ss.getSheetByName(BLATT) : null;
+    blatt = a ? ss.insertSheet(name, a.getIndex() - 1) : ss.insertSheet(name);
+  }
   if (blatt.getLastRow() === 0) {
     blatt.appendRow(kopf);
     blatt.getRange(1, 1, 1, kopf.length).setFontWeight('bold');
