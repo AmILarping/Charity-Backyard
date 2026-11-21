@@ -3,7 +3,7 @@
 const CONFIG = {
   // Web-App-URL aus Google Apps Script (endet auf /exec).
   // Solange sie leer ist, läuft die Anmeldung im Vorschau-Modus.
-  API_URL: 'https://script.google.com/macros/s/AKfycbwfmWkS3cEvcmkRwVaIDfD9sZ7Yro9pdtlFKPZXBjO-1_b54amNQS-B_dShwMItIJBECA/exec',
+  API_URL: 'https://script.google.com/macros/s/AKfycbyAbHvAsgT4v3IN8bXIISKfNXfBfuWepQVsocDA7Laoap0Q2q1T3s6ZBQzQkuodpGD4Cg/exec',
 
   // true  = nur Anmeldung: Namen und E-Mail werden in die Tabelle geschrieben, keine Zahlung.
   // false = Anmeldung mit PayPal-Zahlung (braucht apps-script/Code.gs statt Code-einfach.gs).
